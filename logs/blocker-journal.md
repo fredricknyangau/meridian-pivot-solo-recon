@@ -178,6 +178,10 @@ By default, the server forgets everything. To stop this, the queue needs to be e
 - A consumer that receives and processes that message
 - Basic acknowledgment handling, so a message is not lost if the consumer fails mid-task
 
+## Note on Mini-Prototype Origin
+
+The `quorum` queue type and `basic_qos(prefetch_count=1)` pattern used in the mini-prototype came directly from the official Work Queues tutorial, the same source cited above, not introduced separately. The mini-prototype extends this base (durable quorum queue, manual ack, prefetch limiting) with a structured JSON event payload, CLI arguments for testing different scenarios, and a deliberate `--fail-before-ack` flag used specifically to verify RabbitMQ's re-queue behavior under failure, going beyond what the tutorial itself covers.
+
 **Final status as of end of Day 2:**
 - [x] RabbitMQ server running (via Docker)
 - [x] Core concepts (producer / queue / consumer, idempotent queue declaration) understood
@@ -203,13 +207,10 @@ My original target (producer, consumer, basic acknowledgment handling) has been 
 
 ## Final Reflection
 
-**What I understand now that I didn't before:**
 I understand how a message broker keeps a producer and a consumer separate from each other, they do not need to run at the same time or know about each other directly. The queue sits in between and holds the message until it is picked up. I also understand why `queue_declare` being idempotent matters, it lets both sides safely make sure the queue exists without worrying about who creates it first or causing an error by declaring it twice.
 
-Beyond that, I now understand how work queues let you spread tasks across many workers, how round-robin dispatch spreads that work out evenly, how manual acknowledgment stops a task from being lost if a worker dies mid-way, and why a queue needs to be marked durable if it should survive the RabbitMQ server restarting.
+I now understand how work queues let you spread tasks across many workers, how round-robin dispatch spreads that work out evenly, how manual acknowledgment stops a task from being lost if a worker dies mid-way, and why a queue needs to be marked durable if it should survive the RabbitMQ server restarting.
 
-**What I'd still need to learn to use this in production:**
-Dead-letter queues, for handling messages that keep failing even after being retried. Clustering and monitoring for running RabbitMQ reliably at scale. And how to properly connect a RabbitMQ consumer into a long-running FastAPI service, instead of a standalone script like I used here. These are the natural next steps, and they connect directly to this sprint's later move toward a webhook-driven design.
 
 **Honest note on any moment I was tempted to fake confidence or skip logging a struggle:**
 No. Every real blocker I hit, the Ubuntu install mismatch, the missing pip, the wrong folder, and the channel name error, was written down as it happened, not remembered and written up afterward. None of them took very long to fix, but each one was a real point where my first attempt did not work and I had to actually stop, think, and try something different, which is exactly why I logged them instead of only writing about what worked in the end.
